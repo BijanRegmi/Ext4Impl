@@ -23,4 +23,17 @@ pub trait LoadAble: Sized {
         }
         Ok(result)
     }
+
+    fn from_vec(buf: Vec<u8>) -> Self {
+        let size = size_of::<Self>();
+        let mut result = unsafe { std::mem::MaybeUninit::<Self>::uninit().assume_init() };
+        unsafe {
+            memcpy(
+                &mut result as *mut Self as *mut c_void,
+                buf.as_ptr() as *const c_void,
+                size,
+            );
+        }
+        result
+    }
 }

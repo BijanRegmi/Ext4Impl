@@ -1,9 +1,8 @@
+use super::loadable::LoadAble;
 use bitflags::bitflags;
 
-use super::loadable::LoadAble;
-
 bitflags! {
-    #[derive(Debug)]
+    #[derive(Debug, Clone, Copy, Eq, PartialEq)]
     pub struct Ext4Os: u32 {
         const LINUX = 0;
         const HURD = 1;
@@ -12,7 +11,7 @@ bitflags! {
         const LITES = 4;
     }
 
-    #[derive(Debug)]
+    #[derive(Debug, Clone, Copy, Eq, PartialEq)]
     pub struct Ext4CompatibleFeatures: u32{
         const DIR_PREALLOC = 0x0001;
         const IMAGIC_INODES = 0x0002;
@@ -26,7 +25,7 @@ bitflags! {
         const ORPHAN_FILE = 0x1000;
     }
 
-    #[derive(Debug)]
+    #[derive(Debug, Clone, Copy, Eq, PartialEq)]
     pub struct Ext4IncompatibleFeatures: u32 {
         const COMPRESSION = 0x0001;
         const FILETYPE = 0x0002;
@@ -46,7 +45,7 @@ bitflags! {
         const CASEFOLD = 0x20000;
     }
 
-    #[derive(Debug)]
+    #[derive(Debug, Clone, Copy, Eq, PartialEq)]
     pub struct Ext4ROCompatibleFeatures: u32 {
         const SPARSE_SUPER = 0x0001;
         const LARGE_FILE = 0x0002;
@@ -64,7 +63,7 @@ bitflags! {
         const ORPHAN_PRESENT = 0x10000;
     }
 
-    #[derive(Debug)]
+    #[derive(Debug, Clone, Copy, Eq, PartialEq)]
     pub struct DxHash: u8 {
         const LEGACY = 0;
         const HALF_MD4 = 1;
@@ -76,7 +75,7 @@ bitflags! {
     }
 
     /// Default mount options
-    #[derive(Debug)]
+    #[derive(Debug, Clone, Copy, Eq, PartialEq)]
     pub struct Ext4Defm: u32 {
         const DEBUG = 0x0001;
         const BSDGROUPS = 0x0002;
@@ -231,7 +230,7 @@ pub struct Ext4SuperBlock {
     pub s_min_extra_isize: u16,
     /// New inodes should reserve # bytes.
     pub s_want_extra_isize: u16,
-    /// Miscellaneous flags. 
+    /// Miscellaneous flags.
     pub s_flags: u32,
     /// RAID stride. This is the number of logical blocks read from or written to
     /// the disk before moving to the next disk. This affects the placement of
@@ -341,4 +340,12 @@ pub struct Ext4SuperBlock {
     /// Superblock checksum.   
     pub s_checksum: u32,
 }
+
+impl Ext4SuperBlock {
+    pub fn has_sparse_super_feature(&self) -> bool {
+        self.s_feature_ro_compat
+            .contains(Ext4ROCompatibleFeatures::SPARSE_SUPER)
+    }
+}
+
 impl LoadAble for Ext4SuperBlock {}
