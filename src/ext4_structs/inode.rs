@@ -1,110 +1,109 @@
 use super::loadable::LoadAble;
+use bitflags::bitflags;
 
-#[repr(u16)]
-#[derive(Debug)]
-#[allow(dead_code)]
-pub enum FileMode {
-    /// Others may execute
-    SIxoth = 0x1,
-    /// Others may write
-    SIwoth = 0x2,
-    /// Others may read
-    SIroth = 0x4,
-    /// Group members may execute
-    SIxgrp = 0x8,
-    /// Group members may write
-    SIwgrp = 0x10,
-    /// Group members may read
-    SIrgrp = 0x20,
-    /// Owner may execute
-    SIxusr = 0x40,
-    /// Owner may write
-    SIwusr = 0x80,
-    /// Owner may read
-    SIrusr = 0x100,
-    /// Sticky bit
-    SIsvtx = 0x200,
-    /// Set GID
-    SIsgid = 0x400,
-    /// Set UID
-    SIsuid = 0x800,
-    /// FIFO
-    SIfifo = 0x1000,
-    /// Character device
-    SIfchr = 0x2000,
-    /// Directory
-    SIfdir = 0x4000,
-    /// Block device
-    SIfblk = 0x6000,
-    /// Regular file
-    SIfreg = 0x8000,
-    /// Symbolic link
-    SIflnk = 0xA000,
-    /// Socket
-    SIfsock = 0xC000,
-}
+bitflags! {
+    #[derive(Debug)]
+    pub struct FileMode: u16 {
+        /// Others may execute
+        const SIxoth = 0x1;
+        /// Others may write
+        const SIwoth = 0x2;
+        /// Others may read
+        const SIroth = 0x4;
+        /// Group members may execute
+        const SIxgrp = 0x8;
+        /// Group members may write
+        const SIwgrp = 0x10;
+        /// Group members may read
+        const SIrgrp = 0x20;
+        /// Owner may execute
+        const SIxusr = 0x40;
+        /// Owner may write
+        const SIwusr = 0x80;
+        /// Owner may read
+        const SIrusr = 0x100;
+        /// Sticky bit
+        const SIsvtx = 0x200;
+        /// Set GID
+        const SIsgid = 0x400;
+        /// Set UID
+        const SIsuid = 0x800;
+        /// FIFO
+        const SIfifo = 0x1000;
+        /// Character device
+        const SIfchr = 0x2000;
+        /// Directory
+        const SIfdir = 0x4000;
+        /// Block device
+        const SIfblk = 0x6000;
+        /// Regular file
+        const SIfreg = 0x8000;
+        /// Symbolic link
+        const SIflnk = 0xA000;
+        /// Socket
+        const SIfsock = 0xC000;
+    }
 
-#[allow(dead_code)]
-#[repr(u32)]
-#[derive(Debug)]
-pub enum IFlags {
-    /// Secure deletion
-    Ext4SecrmFl = 0x00000001,
-    /// Undelete
-    Ext4UnrmFl = 0x00000002,
-    /// Compress file
-    Ext4ComprFl = 0x00000004,
-    /// Synchronous updates
-    Ext4SyncFl = 0x00000008,
-    /// Immutable file
-    Ext4ImmutableFl = 0x00000010,
-    /// writes to file may only append
-    Ext4AppendFl = 0x00000020,
-    /// do not dump file
-    Ext4NodumpFl = 0x00000040,
-    /// do not update atime
-    Ext4NoatimeFl = 0x00000080,
-    Ext4DirtyFl = 0x00000100,
-    /// One or more compressed clusters
-    Ext4ComprblkFl = 0x00000200,
-    /// Don't compress
-    Ext4NocomprFl = 0x00000400,
-    /// encrypted file
-    Ext4EncryptFl = 0x00000800,
-    /// hash-indexed directory
-    Ext4IndexFl = 0x00001000,
-    /// AFS directory
-    Ext4ImagicFl = 0x00002000,
-    /// file data should be journaled
-    Ext4JournalDataFl = 0x00004000,
-    /// file tail should not be merged
-    Ext4NotailFl = 0x00008000,
-    /// dirsync behaviour (directories only)
-    Ext4DirsyncFl = 0x00010000,
-    /// Top of directory hierarchies
-    Ext4TopdirFl = 0x00020000,
-    /// Set to each huge file
-    Ext4HugeFileFl = 0x00040000,
-    /// Inode uses extents
-    Ext4ExtentsFl = 0x00080000,
-    /// Verity protected inode
-    Ext4VerityFl = 0x00100000,
-    /// Inode used for large EA
-    Ext4EaInodeFl = 0x00200000,
-    /// Inode is DAX
-    Ext4DaxFl = 0x02000000,
-    /// Inode has inline data.
-    Ext4InlineDataFl = 0x10000000,
-    /// Create with parents projid
-    Ext4ProjinheritFl = 0x20000000,
-    /// Casefolded directory
-    Ext4CasefoldFl = 0x40000000,
-    /// reserved for ext4 lib
-    Ext4ReservedFl = 0x80000000,
-    /// User modifiable flags
-    Ext4FlUserModifiable = 0x604BC0FF,
-    /// User visible flags
-    Ext4FlUserVisible = 0x705BDFFF,
+    #[derive(Debug)]
+    pub struct IFlags: u32 {
+        /// Secure deletion
+        const Ext4SecrmFl = 0x00000001;
+        /// Undelete
+        const Ext4UnrmFl = 0x00000002;
+        /// Compress file
+        const Ext4ComprFl = 0x00000004;
+        /// Synchronous updates
+        const Ext4SyncFl = 0x00000008;
+        /// Immutable file
+        const Ext4ImmutableFl = 0x00000010;
+        /// writes to file may only append
+        const Ext4AppendFl = 0x00000020;
+        /// do not dump file
+        const Ext4NodumpFl = 0x00000040;
+        /// do not update atime
+        const Ext4NoatimeFl = 0x00000080;
+        const Ext4DirtyFl = 0x00000100;
+        /// One or more compressed clusters
+        const Ext4ComprblkFl = 0x00000200;
+        /// Don't compress
+        const Ext4NocomprFl = 0x00000400;
+        /// encrypted file
+        const Ext4EncryptFl = 0x00000800;
+        /// hash-indexed directory
+        const Ext4IndexFl = 0x00001000;
+        /// AFS directory
+        const Ext4ImagicFl = 0x00002000;
+        /// file data should be journaled
+        const Ext4JournalDataFl = 0x00004000;
+        /// file tail should not be merged
+        const Ext4NotailFl = 0x00008000;
+        /// dirsync behaviour (directories only)
+        const Ext4DirsyncFl = 0x00010000;
+        /// Top of directory hierarchies
+        const Ext4TopdirFl = 0x00020000;
+        /// Set to each huge file
+        const Ext4HugeFileFl = 0x00040000;
+        /// Inode uses extents
+        const Ext4ExtentsFl = 0x00080000;
+        /// Verity protected inode
+        const Ext4VerityFl = 0x00100000;
+        /// Inode used for large EA
+        const Ext4EaInodeFl = 0x00200000;
+        /// Inode is DAX
+        const Ext4DaxFl = 0x02000000;
+        /// Inode has inline data.
+        const Ext4InlineDataFl = 0x10000000;
+        /// Create with parents projid
+        const Ext4ProjinheritFl = 0x20000000;
+        /// Casefolded directory
+        const Ext4CasefoldFl = 0x40000000;
+        /// reserved for ext4 lib
+        const Ext4ReservedFl = 0x80000000;
+        /// User modifiable flags
+        const Ext4FlUserModifiable = 0x604BC0FF;
+        /// User visible flags
+        const Ext4FlUserVisible = 0x705BDFFF;
+    }
 }
 
 #[allow(dead_code)]
@@ -120,7 +119,10 @@ pub struct Ext4Inode {
     /// Lower 32-bits of size in bytes.
     pub i_size_lo: u32,
 
-    /// Last access time, in seconds since the epoch. However, if the EA_INODE inode flag is set, this inode stores an extended attribute value and this field contains the checksum of the value.
+    /// Last access time, in seconds since the epoch.
+    /// However, if the EA_INODE inode flag is set, this inode
+    /// stores an extended attribute value and this field contains
+    /// the checksum of the value.
     pub i_atime: u32,
 
     /// Last inode change time, in seconds since the epoch.

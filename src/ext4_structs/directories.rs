@@ -1,4 +1,5 @@
 use super::loadable::LoadAble;
+use bitflags::bitflags;
 
 #[allow(dead_code)]
 #[derive(Debug)]
@@ -18,20 +19,20 @@ pub struct Ext4DirEntry {
 }
 impl LoadAble for Ext4DirEntry {}
 
-#[allow(dead_code)]
-#[derive(Debug)]
-#[repr(u8)]
-pub enum FileType {
-    Ext4FtUnknown = 0,
-    Ext4FtRegFile = 1,
-    Ext4FtDir = 2,
-    Ext4FtChrdev = 3,
-    Ext4FtBlkdev = 4,
-    Ext4FtFifo = 5,
-    Ext4FtSock = 6,
-    Ext4FtSymlink = 7,
-    Ext4FtMax = 8,
-    Ext4FtDirCsum = 0xDE,
+bitflags! {
+    #[derive(Debug)]
+    pub struct FileType:u8 {
+        const Ext4FtUnknown = 0;
+        const Ext4FtRegFile = 1;
+        const Ext4FtDir = 2;
+        const Ext4FtChrdev = 3;
+        const Ext4FtBlkdev = 4;
+        const Ext4FtFifo = 5;
+        const Ext4FtSock = 6;
+        const Ext4FtSymlink = 7;
+        const Ext4FtMax = 8;
+        const Ext4FtDirCsum = 0xDE;
+    }
 }
 
 #[allow(dead_code)]
