@@ -1,10 +1,10 @@
-use super::loadable::LoadAble;
+use super::LoadAble;
 use bitflags::bitflags;
 
 #[allow(dead_code)]
 #[derive(Debug)]
 #[repr(C)]
-pub struct Ext4DirEntry {
+pub struct DirEntry {
     /// Number of the inode that this directory entry points to.
     pub inode: u32,
 
@@ -17,7 +17,7 @@ pub struct Ext4DirEntry {
     /// File name.
     pub name: [char; 255],
 }
-impl LoadAble for Ext4DirEntry {}
+impl LoadAble for DirEntry {}
 
 bitflags! {
     #[derive(Debug)]
@@ -38,7 +38,7 @@ bitflags! {
 #[allow(dead_code)]
 #[derive(Debug)]
 #[repr(C)]
-pub struct Ext4DirEntry2 {
+pub struct DirEntry2 {
     /// Number of the inode that this directory entry points to.
     pub inode: u32,
 
@@ -54,16 +54,16 @@ pub struct Ext4DirEntry2 {
     /// File name.
     pub name: [char; 255],
 }
-impl LoadAble for Ext4DirEntry2 {}
+impl LoadAble for DirEntry2 {}
 
 #[allow(dead_code)]
 #[derive(Debug)]
 #[repr(C)]
-pub struct Ext4DirEntryHash {
+pub struct DirEntryHash {
     /// The hash of the directory name
     pub hash: u32,
 
     /// The minor hash of the directory name
     pub minor_hash: u32,
 }
-impl LoadAble for Ext4DirEntryHash {}
+impl LoadAble for DirEntryHash {}

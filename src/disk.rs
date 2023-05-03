@@ -1,10 +1,11 @@
 use std::io::{Read, Seek};
 
-use crate::ext4_structs::{self, Ext4GroupDesc, Ext4Inode, LoadAble};
+use crate::ext4;
+use crate::ext4::LoadAble;
 
 pub struct Disk {
     file: std::fs::File,
-    pub super_block: ext4_structs::Ext4SuperBlock,
+    pub super_block: ext4::structs::SuperBlock,
     pub block_size: u64,
     pub groups_per_flex: u32,
 }
@@ -13,7 +14,7 @@ impl Disk {
     pub fn new(path: &str) -> Self {
         let mut f = std::fs::File::open(path).expect("Failed to open file.");
 
-        let sb = ext4_structs::Ext4SuperBlock::from_file_offset(&mut f, 0x400)
+        let sb = ext4::structs::SuperBlock::from_file_offset(&mut f, 0x400)
             .expect("Failed to read superblock");
         let bs: u64 = (2 as u64).pow(10 + sb.s_log_block_size);
         let gpf: u32 = (1 as u32) << sb.s_log_groups_per_flex;
@@ -26,6 +27,7 @@ impl Disk {
         }
     }
 
+    #[allow(dead_code)]
     pub fn read_block(&mut self, block_num: u64) -> std::io::Result<Vec<u8>> {
         let mut buf = vec![0u8; self.block_size as usize];
         self.file
@@ -34,25 +36,26 @@ impl Disk {
         Ok(buf)
     }
 
-    pub fn get_group_desc(&mut self, group_num: u32) -> Ext4GroupDesc {
+    pub fn get_group_desc(&mut self, group_num: u32) -> ext4::structs::GroupDesc {
         let primary_group_in_flex = group_num - (group_num % self.groups_per_flex);
         let block_no = primary_group_in_flex * self.super_block.s_blocks_per_group
             + self.super_block.s_first_data_block
             + 1;
-        ext4_structs::Ext4GroupDesc::from_file_offset(
+        ext4::structs::GroupDesc::from_file_offset(
             &mut self.file,
             (block_no as u64) * (self.block_size as u64),
         )
         .expect("Cannot read group desc")
     }
 
+    #[allow(dead_code)]
     pub fn block_group_has_superblock(&self, bg_num: u32) -> bool {
         if bg_num == 0 {
             return true;
         } else if self
             .super_block
             .s_feature_compat
-            .contains(ext4_structs::Ext4CompatibleFeatures::SPARSE_SUPER2)
+            .contains(ext4::flags::superblock::CompatibleFeatures::SPARSE_SUPER2)
         {
             unimplemented!("Check s_backup_bgs")
         } else if bg_num <= 1 || !self.super_block.has_sparse_super_feature() {
@@ -77,7 +80,7 @@ impl Disk {
         }
     }
 
-    pub fn get_inode(&mut self, inode_num: u32) -> Ext4Inode {
+    pub fn get_inode(&mut self, inode_num: u32) -> ext4::structs::Inode {
         // Block group that an inode lives in
         let bg = (inode_num - 1) / self.super_block.s_inodes_per_group;
         // Get group desc of bg block number
@@ -88,7 +91,7 @@ impl Disk {
         let inode_index_in_table = (inode_num - 1) % self.super_block.s_inodes_per_group;
         let inode_offset_in_table = inode_index_in_table * self.super_block.s_inode_size as u32;
         let inode_address = inode_table_address * self.block_size + inode_offset_in_table as u64;
-        ext4_structs::Ext4Inode::from_file_offset(&mut self.file, inode_address)
+        ext4::structs::Inode::from_file_offset(&mut self.file, inode_address)
             .expect("Failed to get inode")
     }
 }

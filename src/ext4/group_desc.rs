@@ -1,6 +1,6 @@
 use bitflags::bitflags;
 
-use super::loadable::LoadAble;
+use super::LoadAble;
 
 bitflags! {
     #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -17,7 +17,7 @@ bitflags! {
 #[allow(dead_code)]
 #[derive(Debug)]
 #[repr(C)]
-pub struct Ext4GroupDesc {
+pub struct GroupDesc {
     /// Lower 32-bits of location of block bitmap.
     pub bg_block_bitmap_lo: u32,
 
@@ -56,7 +56,7 @@ pub struct Ext4GroupDesc {
     /// Group descriptor checksum;
     /// crc16(sb_uuid+group_num+bg_desc) if the RO_COMPAT_GDT_CSUM feature is set,
     /// or crc32c(sb_uuid+group_num+bg_desc) & 0xFFFF if the RO_COMPAT_METADATA_CSUM feature is set.
-    /// The bg_checksum field in bg_desc is skipped when calculating crc16 checksum, 
+    /// The bg_checksum field in bg_desc is skipped when calculating crc16 checksum,
     /// and set to zero if crc32c checksum is used.
     pub bg_checksum: u16,
 
@@ -94,4 +94,4 @@ pub struct Ext4GroupDesc {
     pub bg_reserved: u32,
 }
 
-impl LoadAble for Ext4GroupDesc {}
+impl LoadAble for GroupDesc {}

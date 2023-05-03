@@ -1,9 +1,9 @@
-use super::loadable::LoadAble;
+use super::LoadAble;
 
 #[allow(dead_code)]
 #[derive(Debug)]
 #[repr(C)]
-pub struct Ext4ExtentHeader {
+pub struct ExtentHeader {
     /// Magic number, 0xF30A.
     pub eh_magic: u16,
 
@@ -24,12 +24,12 @@ pub struct Ext4ExtentHeader {
     /// Generation of the tree. (Used by Lustre, but not standard ext4).
     pub eh_generation: u32,
 }
-impl LoadAble for Ext4ExtentHeader {}
+impl LoadAble for ExtentHeader {}
 
 #[allow(dead_code)]
 #[derive(Debug)]
 #[repr(C)]
-pub struct Ext4ExtentIdx {
+pub struct ExtentIdx {
     /// This index node covers file blocks from ‘block’ onward.
     pub ei_block: u32,
 
@@ -43,13 +43,13 @@ pub struct Ext4ExtentIdx {
 
     pub ei_unused: u16,
 }
-impl LoadAble for Ext4ExtentIdx {}
+impl LoadAble for ExtentIdx {}
 
 // Leaf node
 #[allow(dead_code)]
 #[derive(Debug)]
 #[repr(C)]
-pub struct Ext4Extent {
+pub struct Extent {
     /// First file block number that this extent covers.
     pub ee_block: u32,
 
@@ -67,13 +67,13 @@ pub struct Ext4Extent {
     /// Lower 32-bits of the block number to which this extent points.
     pub ee_start_lo: u32,
 }
-impl LoadAble for Ext4Extent {}
+impl LoadAble for Extent {}
 
 #[allow(dead_code)]
 #[derive(Debug)]
 #[repr(C)]
-pub struct Ext4ExtentTail {
+pub struct ExtentTail {
     /// Checksum of the extent block, crc32c(uuid+inum+igeneration+extentblock)
     pub et_checksum: u32,
 }
-impl LoadAble for Ext4ExtentTail {}
+impl LoadAble for ExtentTail {}

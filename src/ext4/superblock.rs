@@ -1,9 +1,9 @@
-use super::loadable::LoadAble;
+use super::LoadAble;
 use bitflags::bitflags;
 
 bitflags! {
     #[derive(Debug, Clone, Copy, Eq, PartialEq)]
-    pub struct Ext4Os: u32 {
+    pub struct OS: u32 {
         const LINUX = 0;
         const HURD = 1;
         const MASIX = 2;
@@ -12,7 +12,7 @@ bitflags! {
     }
 
     #[derive(Debug, Clone, Copy, Eq, PartialEq)]
-    pub struct Ext4CompatibleFeatures: u32{
+    pub struct CompatibleFeatures: u32{
         const DIR_PREALLOC = 0x0001;
         const IMAGIC_INODES = 0x0002;
         const HAS_JOURNAL = 0x0004;
@@ -26,7 +26,7 @@ bitflags! {
     }
 
     #[derive(Debug, Clone, Copy, Eq, PartialEq)]
-    pub struct Ext4IncompatibleFeatures: u32 {
+    pub struct IncompatibleFeatures: u32 {
         const COMPRESSION = 0x0001;
         const FILETYPE = 0x0002;
         const RECOVER = 0x0004;
@@ -46,7 +46,7 @@ bitflags! {
     }
 
     #[derive(Debug, Clone, Copy, Eq, PartialEq)]
-    pub struct Ext4ROCompatibleFeatures: u32 {
+    pub struct ROCompatibleFeatures: u32 {
         const SPARSE_SUPER = 0x0001;
         const LARGE_FILE = 0x0002;
         const BTREE_DIR = 0x0004;
@@ -96,7 +96,7 @@ bitflags! {
 #[allow(dead_code)]
 #[derive(Debug)]
 #[repr(C)]
-pub struct Ext4SuperBlock {
+pub struct SuperBlock {
     /// Total inode count
     pub s_inodes_count: u32,
     /// Total block count.
@@ -149,7 +149,7 @@ pub struct Ext4SuperBlock {
     /// Maximum time between checks, in seconds.
     pub s_checkinterval: u32,
     /// Creator OS.
-    pub s_creator_os: Ext4Os,
+    pub s_creator_os: OS,
     /// Revision level.
     /// 0 -> Original format
     /// 1 -> v2 format w/ dynamic inode sizes
@@ -167,15 +167,15 @@ pub struct Ext4SuperBlock {
     /// Compatible feature set flags.
     /// Kernel can still read/write this fs even if it doesn’t understand a flag;
     /// fsck should not do that.
-    pub s_feature_compat: Ext4CompatibleFeatures,
+    pub s_feature_compat: CompatibleFeatures,
     /// Incompatible feature set.
     /// If the kernel or fsck doesn’t understand one of these bits,
     /// it should stop.
-    pub s_feature_incompat: Ext4IncompatibleFeatures,
+    pub s_feature_incompat: IncompatibleFeatures,
     /// Readonly-compatible feature set.
     /// If the kernel doesn’t understand one of these bits,
     /// it can still mount read-only.
-    pub s_feature_ro_compat: Ext4ROCompatibleFeatures,
+    pub s_feature_ro_compat: ROCompatibleFeatures,
     /// 128-bit UUID for volume.
     pub s_uuid: [u8; 16],
     /// Volume label.
@@ -341,11 +341,15 @@ pub struct Ext4SuperBlock {
     pub s_checksum: u32,
 }
 
-impl Ext4SuperBlock {
+impl SuperBlock {
     pub fn has_sparse_super_feature(&self) -> bool {
         self.s_feature_ro_compat
-            .contains(Ext4ROCompatibleFeatures::SPARSE_SUPER)
+            .contains(ROCompatibleFeatures::SPARSE_SUPER)
     }
+
+    // pub fn has_sparse_super_2_feature(&self) -> bool {
+    // self.s_feature_ro_compat
+    // }
 }
 
-impl LoadAble for Ext4SuperBlock {}
+impl LoadAble for SuperBlock {}

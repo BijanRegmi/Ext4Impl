@@ -1,4 +1,4 @@
-use super::loadable::LoadAble;
+use super::LoadAble;
 use bitflags::bitflags;
 
 bitflags! {
@@ -110,7 +110,7 @@ bitflags! {
 #[allow(dead_code)]
 #[derive(Debug)]
 #[repr(C)]
-pub struct Ext4Inode {
+pub struct Inode {
     /// File mode.
     pub i_mode: FileMode,
 
@@ -237,4 +237,4 @@ pub struct Ext4Inode {
     pub i_projid: u32,
 }
 
-impl LoadAble for Ext4Inode {}
+impl LoadAble for Inode {}
