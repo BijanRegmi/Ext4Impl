@@ -62,6 +62,7 @@ bitflags! {
         const Ext4NodumpFl = 0x00000040;
         /// do not update atime
         const Ext4NoatimeFl = 0x00000080;
+        ///
         const Ext4DirtyFl = 0x00000100;
         /// One or more compressed clusters
         const Ext4ComprblkFl = 0x00000200;
