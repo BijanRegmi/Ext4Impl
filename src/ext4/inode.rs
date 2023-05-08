@@ -173,7 +173,7 @@ pub struct Inode {
     pub l_i_version: u32,
 
     /// Block map or extent tree. See the section “The Contents of inode.i_block”.
-    pub i_block: [u16; 15 * 2],
+    pub i_block: [u8; 60],
 
     /// File version (for NFS).
     pub i_generation: u32,

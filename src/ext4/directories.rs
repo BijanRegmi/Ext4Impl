@@ -15,7 +15,7 @@ pub struct DirEntry {
     pub name_len: u16,
 
     /// File name.
-    pub name: [char; 255],
+    pub name: [u8; 255],
 }
 impl LoadAble for DirEntry {}
 
@@ -52,7 +52,7 @@ pub struct DirEntry2 {
     pub file_type: FileType,
 
     /// File name.
-    pub name: [char; 255],
+    pub name: [u8; 255],
 }
 impl LoadAble for DirEntry2 {}
 
