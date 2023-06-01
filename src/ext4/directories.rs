@@ -67,3 +67,45 @@ pub struct DirEntryHash {
     pub minor_hash: u32,
 }
 impl LoadAble for DirEntryHash {}
+
+#[allow(dead_code)]
+#[derive(Debug)]
+#[repr(C)]
+pub struct DxEntry {
+    pub hash: u32,
+    pub block: u32,
+}
+
+#[allow(dead_code)]
+#[derive(Debug)]
+#[repr(C)]
+pub struct DxRoot {
+    // Dot
+    pub dotinode: u32,
+    pub dotrec_len: u16,
+    pub dotname_len: u8,
+    pub dotfile_type: FileType,
+    pub dotname: [u8; 4],
+
+    // DotDot
+    pub dotdotinode: u32,
+    pub dotdotrec_len: u16,
+    pub dotdotname_len: u8,
+    pub dotdotfile_type: FileType,
+    pub dotdotname: [u8; 4],
+
+    // dx_root_info
+    pub reserved_zero: u32,
+    pub hash_version: u8,
+    pub info_length: u8,
+    pub indirect_levels: u8,
+    pub unused_flags: u8,
+
+    // limits
+    pub limit: u16,
+    pub count: u16,
+    pub block: u32,
+    // pub entries: [DxEntry],
+}
+impl LoadAble for DxEntry {}
+impl LoadAble for DxRoot {}

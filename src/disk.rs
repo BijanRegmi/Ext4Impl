@@ -22,8 +22,6 @@ impl Disk {
         let bs: u32 = (2 as u32).pow(10 + sb.s_log_block_size);
         let gpf: u16 = (1 as u16) << sb.s_log_groups_per_flex;
 
-        dbg!(&sb.s_log_groups_per_flex, bs, gpf);
-
         Disk {
             file: f,
             super_block: sb,
@@ -126,39 +124,64 @@ impl Disk {
 
     pub fn read_dir(&mut self, inode_num: u32) {
         let inode = self.get_inode(inode_num);
-        dbg!(&inode);
-        if inode
-            .i_flags
-            .contains(ext4::flags::inode::IFlags::Ext4IndexFl)
-        {
-            unimplemented!("Hashed Tree Directory");
-        }
 
         let extents = self.get_extents(&inode);
-        if extents.len() > 1 {
+        /* if extents.len() > 1 {
             unimplemented!();
-        }
+        } */
 
         let e = &extents[0];
         let blk_no: u64 = ((e.ee_start_hi as u64) << 32) | e.ee_start_lo as u64;
         let block = self.read_block(blk_no).unwrap();
 
-        let mut offset = 0;
-        let mut entries = Vec::<ext4::structs::dir::Entry2>::new();
-
-        while offset < block.len() {
-            let de = ext4::structs::dir::Entry2::from_buffer(&block, offset);
-            if de.inode == 0 {
-                break;
+        let use_htree = inode
+            .i_flags
+            .contains(ext4::flags::inode::IFlags::Ext4IndexFl);
+        if use_htree {
+            let dx_root = ext4::structs::dir::DxRoot::from_buffer(&block, 0);
+            if dx_root.indirect_levels != 0 {
+                unimplemented!("Support for multi level hash tree is pending")
             }
-            offset = offset + de.rec_len as usize;
-            entries.push(de);
-        }
+            for i in 0..dx_root.count {
+                let nblock;
+                if i == 0 {
+                    nblock = blk_no + dx_root.block as u64;
+                } else {
+                    let dentry = ext4::structs::dir::DxEntry::from_buffer(
+                        &block,
+                        40 + ((i - 1) * 8) as usize,
+                    );
+                    nblock = blk_no + dentry.block as u64;
+                }
+                let blk = self.read_block(nblock).unwrap();
+                let mut off = 0;
+                while off < blk.len() {
+                    let de = ext4::structs::dir::Entry2::from_buffer(&blk, off);
+                    if de.inode == 0 {
+                        break;
+                    }
+                    off = off + de.rec_len as usize;
+                    let s = std::str::from_utf8(&de.name[0..de.name_len as usize]).unwrap();
+                    println!("{:>10}: {}", de.inode, s);
+                }
+            }
+        } else {
+            let mut offset = 0;
+            let mut entries = Vec::<ext4::structs::dir::Entry2>::new();
 
-        println!("Reading dir with inode_num {inode_num}");
-        for ele in entries {
-            let s = std::str::from_utf8(&ele.name[0..ele.name_len as usize]).unwrap();
-            println!("{:>10}: {}", ele.inode, s);
+            while offset < block.len() {
+                let de = ext4::structs::dir::Entry2::from_buffer(&block, offset);
+                if de.inode == 0 {
+                    break;
+                }
+                offset = offset + de.rec_len as usize;
+                entries.push(de);
+            }
+            println!("Reading dir with inode_num {inode_num}");
+            for ele in entries {
+                let s = std::str::from_utf8(&ele.name[0..ele.name_len as usize]).unwrap();
+                println!("{:>10}: {}", ele.inode, s);
+            }
         }
     }
 

@@ -11,7 +11,7 @@ pub mod structs {
     pub use crate::ext4::superblock::SuperBlock;
     pub mod dir {
         pub use crate::ext4::directories::{
-            DirEntry as Entry, DirEntry2 as Entry2, DirEntryHash as EntryHash,
+            DirEntry as Entry, DirEntry2 as Entry2, DirEntryHash as EntryHash, DxEntry, DxRoot,
         };
     }
     pub mod extent {
