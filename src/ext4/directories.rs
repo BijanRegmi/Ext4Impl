@@ -55,6 +55,13 @@ pub struct DirEntry2 {
     pub name: [u8; 255],
 }
 impl LoadAble for DirEntry2 {}
+impl DirEntry2 {
+    pub fn to_char(&self) -> String {
+        std::str::from_utf8(&self.name[0..self.name_len as usize])
+            .unwrap()
+            .to_string()
+    }
+}
 
 #[allow(dead_code)]
 #[derive(Debug)]

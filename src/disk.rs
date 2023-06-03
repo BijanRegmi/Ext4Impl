@@ -122,7 +122,7 @@ impl Disk {
             .expect("Failed to get inode")
     }
 
-    pub fn read_dir(&mut self, inode_num: u32) {
+    pub fn read_dir(&mut self, inode_num: u32) -> Vec<ext4::structs::dir::Entry2> {
         let inode = self.get_inode(inode_num);
 
         let extents = self.get_extents(&inode);
@@ -134,9 +134,12 @@ impl Disk {
         let blk_no: u64 = ((e.ee_start_hi as u64) << 32) | e.ee_start_lo as u64;
         let block = self.read_block(blk_no).unwrap();
 
+        let mut entries = Vec::<ext4::structs::dir::Entry2>::new();
+
         let use_htree = inode
             .i_flags
             .contains(ext4::flags::inode::IFlags::Ext4IndexFl);
+
         if use_htree {
             let dx_root = ext4::structs::dir::DxRoot::from_buffer(&block, 0);
             if dx_root.indirect_levels != 0 {
@@ -154,35 +157,29 @@ impl Disk {
                     nblock = blk_no + dentry.block as u64;
                 }
                 let blk = self.read_block(nblock).unwrap();
-                let mut off = 0;
-                while off < blk.len() {
-                    let de = ext4::structs::dir::Entry2::from_buffer(&blk, off);
+                let mut offset = 0;
+                while offset < blk.len() {
+                    let de = ext4::structs::dir::Entry2::from_buffer(&blk, offset);
+                    offset = offset + de.rec_len as usize;
                     if de.inode == 0 {
-                        break;
+                        continue;
                     }
-                    off = off + de.rec_len as usize;
-                    let s = std::str::from_utf8(&de.name[0..de.name_len as usize]).unwrap();
-                    println!("{:>10}: {}", de.inode, s);
+                    entries.push(de);
                 }
             }
         } else {
             let mut offset = 0;
-            let mut entries = Vec::<ext4::structs::dir::Entry2>::new();
-
             while offset < block.len() {
                 let de = ext4::structs::dir::Entry2::from_buffer(&block, offset);
-                if de.inode == 0 {
-                    break;
-                }
                 offset = offset + de.rec_len as usize;
+                if de.inode == 0 {
+                    continue;
+                }
                 entries.push(de);
             }
-            println!("Reading dir with inode_num {inode_num}");
-            for ele in entries {
-                let s = std::str::from_utf8(&ele.name[0..ele.name_len as usize]).unwrap();
-                println!("{:>10}: {}", ele.inode, s);
-            }
         }
+
+        return entries;
     }
 
     fn get_extents(&mut self, inode: &ext4::structs::Inode) -> Vec<ext4::structs::extent::Extent> {
