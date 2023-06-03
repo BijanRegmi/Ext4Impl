@@ -7,7 +7,6 @@ use crossterm::{
     terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
 };
 use disk::Disk;
-use ext4::LoadAble;
 use std::{
     error::Error,
     io,
@@ -15,9 +14,8 @@ use std::{
 };
 use tui::{
     backend::{Backend, CrosstermBackend},
-    layout::{Alignment, Constraint, Corner, Direction, Layout},
-    style::{Color, Modifier, Style},
-    text::{Span, Spans},
+    layout::Alignment,
+    style::{Color, Style},
     widgets::{Block, BorderType, Borders, List, ListItem, ListState},
     Frame, Terminal,
 };
@@ -61,6 +59,10 @@ impl StatefulList {
         };
         self.state.select(Some(i));
     }
+
+    fn top(&mut self) {
+        self.state.select(Some(0));
+    }
 }
 
 struct App {
@@ -70,12 +72,8 @@ struct App {
 impl App {
     fn new(path: &str) -> App {
         let mut d = disk::Disk::new(path);
-        let inode = match std::env::args().nth(1) {
-            Some(x) => x.parse().unwrap(),
-            None => 2,
-        };
         App {
-            items: StatefulList::with_items(d.read_dir(inode)),
+            items: StatefulList::with_items(d.read_dir(2)),
             disk: d,
         }
     }
@@ -94,6 +92,12 @@ impl App {
 }
 
 fn main() -> Result<(), Box<dyn Error>> {
+    let args: Vec<String> = std::env::args().collect();
+    if args.len() == 1 {
+        println!("Usage: {} file_name", args[0]);
+        return Ok(());
+    }
+
     // setup terminal
     enable_raw_mode()?;
     let mut stdout = io::stdout();
@@ -101,19 +105,8 @@ fn main() -> Result<(), Box<dyn Error>> {
     let backend = CrosstermBackend::new(stdout);
     let mut terminal = Terminal::new(backend)?;
 
-    /////////////////////////////////////////////////////////////////
-
-    let _sda1 = "../iso/sda1.img";
-    let _nvme = "/dev/nvme0n1p3";
-    let _pen = "../iso/pen.img";
-
-    let app = App::new(_pen);
-
-    /////////////////////////////////////////////////////////////////
-
+    let app = App::new(&args[1]);
     run_app(&mut terminal, app)?;
-
-    /////////////////////////////////////////////////////////////////
 
     // restore terminal
     disable_raw_mode()?;
@@ -141,10 +134,11 @@ fn run_app<B: Backend>(terminal: &mut Terminal<B>, mut app: App) -> io::Result<(
         if crossterm::event::poll(timeout)? {
             if let Event::Key(key) = event::read()? {
                 match key.code {
-                    KeyCode::Char('q') => return Ok(()),
-                    KeyCode::Down => app.items.next(),
-                    KeyCode::Up => app.items.previous(),
-                    KeyCode::Enter => app.load(),
+                    KeyCode::Char('q') | KeyCode::Esc => return Ok(()),
+                    KeyCode::Down | KeyCode::Char('j') => app.items.next(),
+                    KeyCode::Up | KeyCode::Char('k') => app.items.previous(),
+                    KeyCode::Enter | KeyCode::Char('l') | KeyCode::Right => app.load(),
+                    KeyCode::Left | KeyCode::Char('h') => app.items.top(),
                     _ => {}
                 }
             }
@@ -158,12 +152,12 @@ fn run_app<B: Backend>(terminal: &mut Terminal<B>, mut app: App) -> io::Result<(
 fn ui<B: Backend>(f: &mut Frame<B>, app: &mut App) {
     let size = f.size();
 
-    // Surrounding block
     let block = Block::default()
         .borders(Borders::ALL)
         .title("Ext4Impl")
         .title_alignment(Alignment::Center)
         .border_type(BorderType::Rounded);
+
     let items: Vec<ListItem> = app
         .items
         .items
@@ -172,6 +166,7 @@ fn ui<B: Backend>(f: &mut Frame<B>, app: &mut App) {
             ListItem::new(i.to_char()).style(Style::default().bg(Color::Black).fg(Color::White))
         })
         .collect();
+
     f.render_stateful_widget(
         List::new(items)
             .block(block)

@@ -1,7 +1,4 @@
 use std::io::{Read, Seek};
-use std::mem::transmute;
-
-use dbg_hex::dbg_hex;
 
 use crate::ext4;
 use crate::ext4::LoadAble;
@@ -30,7 +27,6 @@ impl Disk {
         }
     }
 
-    #[allow(dead_code)]
     pub fn read_block(&mut self, block_num: u64) -> std::io::Result<Vec<u8>> {
         let mut buf = vec![0u8; self.block_size as usize];
         self.file
@@ -75,7 +71,6 @@ impl Disk {
             + offset_in_flex as u64 * self.super_block.s_inodes_per_group as u64
     }
 
-    #[allow(dead_code)]
     pub fn block_group_has_redundant_copy(&self, bg_num: u32) -> bool {
         if bg_num == 0 {
             true
